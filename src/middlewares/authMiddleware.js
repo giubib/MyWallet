@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export function authMiddleware(req, res, next) {
-  const authorization = req.headers.authorization;
+  const { authorization } = req.headers;
 
   if (!authorization) {
     return res.status(401).send("Token não enviado");
@@ -10,10 +13,10 @@ export function authMiddleware(req, res, next) {
   const token = authorization.replace("Bearer ", "");
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = user;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; 
     next();
-  } catch (err) {
-    return res.status(401).send("Token inválido");
+  } catch (error) {
+    return res.status(401).send("Token inválido ou expirado");
   }
 }
